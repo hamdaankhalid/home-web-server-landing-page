@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hamdaankhalid/home-web-server-landing-page/game"
+	"github.com/hamdaankhalid/home-web-server-landing-page/static"
 )
 
 type ServerState struct {
@@ -68,7 +69,8 @@ func actions(route string, state *ServerState) func(w http.ResponseWriter, r *ht
 		}
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
-			tmpl := template.Must(template.ParseFiles("./templates/landing-page.html"))
+
+			tmpl := template.Must(template.ParseFS(static.Assets, "landing-page.tmpl"))
 			curr_board := state.Game.GetBoard()
 			curr_player := state.Game.GetPlayerTurn()
 			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.ScoreTable["X"], Oscore: state.ScoreTable["O"], PlayerTurn: curr_player}
