@@ -1,31 +1,90 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
-    "time"
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/hamdaankhalid/home-web-server-landing-page/game"
 )
 
+type ServerState struct {
+	Game       *game.TicTacToe
+	ScoreTable map[string]int
+}
+
+func InitServer() *ServerState {
+	init_map := map[string]int{"X": 0, "Y": 0}
+	return &ServerState{game.InitTicTacToe(), init_map}
+}
+
+func (s *ServerState) move(row int, col int) string {
+	if row < 0 || row > 2 || col < 0 || col > 2 {
+		return ""
+	}
+
+	win := s.Game.Move(row, col)
+	if win != "" {
+		s.Game = game.InitTicTacToe()
+		s.ScoreTable[win] += 1
+		return win
+	}
+	return ""
+}
+
+type LandingPageData struct {
+	TimeNow        string
+	Board          [][]string
+	Xscore, Oscore int
+	PlayerTurn     string
+}
+
+func actions(route string, state *ServerState) func(w http.ResponseWriter, r *http.Request) {
+	switch route {
+	case "move":
+		return func(w http.ResponseWriter, r *http.Request) {
+			err := r.ParseForm()
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			rval, err := strconv.Atoi(r.Form.Get("row"))
+			if err != nil {
+				http.Redirect(w, r, "/", http.StatusBadRequest)
+				return
+			}
+			cval, err := strconv.Atoi(r.Form.Get("col"))
+			if err != nil {
+				http.Redirect(w, r, "/", http.StatusBadRequest)
+				return
+			}
+
+			state.move(rval, cval)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+	default:
+		return func(w http.ResponseWriter, r *http.Request) {
+			tmpl := template.Must(template.ParseFiles("templates/landing-page.html"))
+			curr_board := state.Game.GetBoard()
+			curr_player := state.Game.GetPlayerTurn()
+			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.ScoreTable["X"], Oscore: state.ScoreTable["O"], PlayerTurn: curr_player}
+			tmpl.Execute(w, tmpl_args)
+		}
+	}
+}
 
 func main() {
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
-	fmt.Fprintf(w, "<html>"+
-		"<head>"+
-		"<title>Home Web-server</title>"+
-		"</head>"+
-		"<body>"+
-		"<h1>Hi I run this server on premise in Seattle, Washington, USA! This is me :) -> </h1>"+
-		"<p> For the sake of using golang I will tell you the time: "+ time.Now().String() +"</p>"+
-		"<a href=\"https://hamdaan-rails-personal.herokuapp.com/\">Visit Me Here!</a>" +
-		"</body>"+
-		"</html>")
-    })
+	state := InitServer()
 
+	http.HandleFunc("/tic-tac-toe-move", actions("move", state))
+	http.HandleFunc("/", actions("", state))
 
-    fmt.Printf("Started server at port 3001\n")
-    if err := http.ListenAndServe(":3001", nil); err != nil {
-        log.Fatal(err)
-    }
-
+	fmt.Printf("Started server at port 3001\n")
+	if err := http.ListenAndServe(":3001", nil); err != nil {
+		log.Fatal(err)
+	}
 }

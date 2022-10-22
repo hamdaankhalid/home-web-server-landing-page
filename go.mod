@@ -1,3 +1,3 @@
-module github.com/hamdaanlhalid/hello
+module github.com/hamdaankhalid/home-web-server-landing-page
 
-go 1.19
+go 1.17
