@@ -1,5 +1,7 @@
 package game
 
+import "errors"
+
 type TicTacToe struct {
 	board     [][]string
 	is_x_turn bool
@@ -15,26 +17,43 @@ func (t *TicTacToe) GetPlayerTurn() string {
 	if t.is_x_turn {
 		return "X"
 	} else {
-		return "Y"
+		return "O"
 	}
 }
 
-func (t *TicTacToe) Move(row int, col int) string {
+func (t *TicTacToe) Move(row int, col int) (string, error) {
+	if row < 0 || row > 2 || col < 0 || col > 2 || t.board[row][col] != "-" {
+		return "", errors.New("bad value")
+	}
+
 	if t.is_x_turn {
 		t.board[row][col] = "X"
 	} else {
 		t.board[row][col] = "O"
 	}
 
+	allfull := true
+	for _, row := range t.board {
+		for _, cell := range row {
+			if cell == "-" {
+				allfull = false
+			}
+		}
+	}
+
 	win := t.check_win(row, col)
 	if win && t.is_x_turn {
-		return "X"
+		return "X", nil
 	} else if win && !t.is_x_turn {
-		return "O"
+		return "O", nil
+	}
+
+	if allfull {
+		return "D", nil
 	}
 
 	t.is_x_turn = !t.is_x_turn
-	return ""
+	return "", nil
 }
 
 func (t *TicTacToe) GetBoard() [][]string {
@@ -42,14 +61,12 @@ func (t *TicTacToe) GetBoard() [][]string {
 }
 
 func (t *TicTacToe) check_win(row int, col int) bool {
-	// make a move and check if won
 	var candidate string
 	if t.is_x_turn {
 		candidate = "X"
 	} else {
 		candidate = "O"
 	}
-
 	horizontal_win := t.board[row][0] == candidate && t.board[row][1] == candidate && t.board[row][2] == candidate
 	vertical_win := t.board[0][col] == candidate && t.board[1][col] == candidate && t.board[2][col] == candidate
 	diagonal_win_1 := t.board[0][0] == candidate && t.board[1][1] == candidate && t.board[2][2] == candidate
