@@ -28,11 +28,8 @@ func (s *ServerState) move(row int, col int) string {
 		return ""
 	}
 
-	if win == "" && s.Game.GetPlayerTurn() == "X" {
-		win, err = s.Game.AiMove()
-	}
-	if err != nil {
-		return ""
+	if win == "" && s.Game.GetPlayerTurn() == "O" {
+		win = s.Game.AiMove()
 	}
 
 	if win != "" {
