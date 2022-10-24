@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/hamdaankhalid/home-web-server-landing-page/game"
@@ -16,11 +17,12 @@ import (
 type serverState struct {
 	game       *game.TicTacToe
 	scoreTable map[string]int
+	mu         sync.Mutex
 }
 
 func initServer() *serverState {
 	init_map := map[string]int{"X": 0, "O": 0, "D": 0}
-	return &serverState{game.InitTicTacToe(), init_map}
+	return &serverState{game: game.InitTicTacToe(), scoreTable: init_map}
 }
 
 func (s *serverState) move(row int, col int) string {
@@ -68,12 +70,15 @@ func actions(route string, state *serverState) func(w http.ResponseWriter, r *ht
 				http.Redirect(w, r, "/", http.StatusBadRequest)
 				return
 			}
+			state.mu.Lock()
+			defer state.mu.Unlock()
 			state.move(rval, cval)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
-
+			state.mu.Lock()
+			defer state.mu.Unlock()
 			tmpl := template.Must(template.ParseFS(static.Assets, "landing-page.tmpl"))
 			curr_board := state.game.GetBoard()
 			curr_player := state.game.GetPlayerTurn()
