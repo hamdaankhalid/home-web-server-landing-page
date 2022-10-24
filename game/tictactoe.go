@@ -76,6 +76,23 @@ if it is the opposition who made the last move we will maximize the score, if it
 and we do a return up the stack we minimize the score (act as a rational opposition). We do this all the way up
 and use the last returned choice as our row and col to fill with the "O".
 **/
+func (t *TicTacToe) minimax() (int, int, bool) {
+	// check_win?
+
+	possible_moves := [][]int{}
+	for i, row := range t.board {
+		for j, cell := range row {
+			if cell == "-" {
+				possible_moves = append(possible_moves, []int{i, j})
+			}
+		}
+	}
+
+	for _, move := range possible_moves {
+
+	}
+}
+
 func (t *TicTacToe) AiMove() (string, error) {
 	// use minimax algorithm to make a move and return check_win
 
