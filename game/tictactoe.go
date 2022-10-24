@@ -1,10 +1,15 @@
 package game
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/hamdaankhalid/home-web-server-landing-page/ai"
+	"github.com/hamdaankhalid/home-web-server-landing-page/utils"
+)
 
 type TicTacToe struct {
-	board     [][]string
-	is_x_turn bool
+	board   [][]string
+	isXTurn bool
 }
 
 func InitTicTacToe() *TicTacToe {
@@ -14,7 +19,7 @@ func InitTicTacToe() *TicTacToe {
 }
 
 func (t *TicTacToe) GetPlayerTurn() string {
-	if t.is_x_turn {
+	if t.isXTurn {
 		return "X"
 	} else {
 		return "O"
@@ -26,50 +31,35 @@ func (t *TicTacToe) Move(row int, col int) (string, error) {
 		return "", errors.New("bad value")
 	}
 
-	if t.is_x_turn {
+	if t.isXTurn {
 		t.board[row][col] = "X"
 	} else {
 		t.board[row][col] = "O"
 	}
 
-	allfull := true
-	for _, row := range t.board {
-		for _, cell := range row {
-			if cell == "-" {
-				allfull = false
-			}
-		}
+	win := utils.CheckWinHelper(t.board)
+	if win != "" {
+		return win, nil
 	}
 
-	win := t.check_win(row, col)
-	if win && t.is_x_turn {
-		return "X", nil
-	} else if win && !t.is_x_turn {
-		return "O", nil
-	}
-
-	if allfull {
-		return "D", nil
-	}
-
-	t.is_x_turn = !t.is_x_turn
+	t.isXTurn = !t.isXTurn
 	return "", nil
+}
+
+func (t *TicTacToe) AiMove() string {
+	// use minimax algorithm to make a move and return check_win
+	result := ai.Minimax(t.board)
+	t.board[result.Row][result.Col] = "O"
+
+	win := utils.CheckWinHelper(t.board)
+	if win != "" {
+		return win
+	}
+
+	t.isXTurn = !t.isXTurn
+	return ""
 }
 
 func (t *TicTacToe) GetBoard() [][]string {
 	return t.board
-}
-
-func (t *TicTacToe) check_win(row int, col int) bool {
-	var candidate string
-	if t.is_x_turn {
-		candidate = "X"
-	} else {
-		candidate = "O"
-	}
-	horizontal_win := t.board[row][0] == candidate && t.board[row][1] == candidate && t.board[row][2] == candidate
-	vertical_win := t.board[0][col] == candidate && t.board[1][col] == candidate && t.board[2][col] == candidate
-	diagonal_win_1 := t.board[0][0] == candidate && t.board[1][1] == candidate && t.board[2][2] == candidate
-	diagonal_win_2 := t.board[2][0] == candidate && t.board[1][1] == candidate && t.board[0][2] == candidate
-	return horizontal_win || vertical_win || diagonal_win_1 || diagonal_win_2
 }

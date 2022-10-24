@@ -12,30 +12,36 @@ import (
 	"github.com/hamdaankhalid/home-web-server-landing-page/static"
 )
 
-type ServerState struct {
-	Game       *game.TicTacToe
-	ScoreTable map[string]int
+// no use of this struct outside this package
+type serverState struct {
+	game       *game.TicTacToe
+	scoreTable map[string]int
 }
 
-func InitServer() *ServerState {
+func initServer() *serverState {
 	init_map := map[string]int{"X": 0, "O": 0, "D": 0}
-	return &ServerState{game.InitTicTacToe(), init_map}
+	return &serverState{game.InitTicTacToe(), init_map}
 }
 
-func (s *ServerState) move(row int, col int) string {
-	win, err := s.Game.Move(row, col)
+func (s *serverState) move(row int, col int) string {
+	win, err := s.game.Move(row, col)
 	if err != nil {
 		return ""
 	}
 
+	if win == "" && s.game.GetPlayerTurn() == "O" {
+		win = s.game.AiMove()
+	}
+
 	if win != "" {
-		s.Game = game.InitTicTacToe()
-		s.ScoreTable[win] += 1
+		s.game = game.InitTicTacToe()
+		s.scoreTable[win] += 1
 		return win
 	}
 	return ""
 }
 
+// all members are public since this is used in a different package
 type LandingPageData struct {
 	TimeNow                   string
 	Board                     [][]string
@@ -43,12 +49,11 @@ type LandingPageData struct {
 	PlayerTurn                string
 }
 
-func actions(route string, state *ServerState) func(w http.ResponseWriter, r *http.Request) {
+func actions(route string, state *serverState) func(w http.ResponseWriter, r *http.Request) {
 	switch route {
 	case "move":
 		return func(w http.ResponseWriter, r *http.Request) {
 			err := r.ParseForm()
-
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -63,7 +68,6 @@ func actions(route string, state *ServerState) func(w http.ResponseWriter, r *ht
 				http.Redirect(w, r, "/", http.StatusBadRequest)
 				return
 			}
-
 			state.move(rval, cval)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
@@ -71,16 +75,16 @@ func actions(route string, state *ServerState) func(w http.ResponseWriter, r *ht
 		return func(w http.ResponseWriter, r *http.Request) {
 
 			tmpl := template.Must(template.ParseFS(static.Assets, "landing-page.tmpl"))
-			curr_board := state.Game.GetBoard()
-			curr_player := state.Game.GetPlayerTurn()
-			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.ScoreTable["X"], Oscore: state.ScoreTable["O"], Drawscore: state.ScoreTable["D"], PlayerTurn: curr_player}
+			curr_board := state.game.GetBoard()
+			curr_player := state.game.GetPlayerTurn()
+			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.scoreTable["X"], Oscore: state.scoreTable["O"], Drawscore: state.scoreTable["D"], PlayerTurn: curr_player}
 			tmpl.Execute(w, tmpl_args)
 		}
 	}
 }
 
 func main() {
-	state := InitServer()
+	state := initServer()
 
 	http.HandleFunc("/tic-tac-toe-move", actions("move", state))
 	http.HandleFunc("/", actions("", state))
