@@ -4,11 +4,12 @@ import (
 	"errors"
 
 	"github.com/hamdaankhalid/home-web-server-landing-page/ai"
+	"github.com/hamdaankhalid/home-web-server-landing-page/utils"
 )
 
 type TicTacToe struct {
-	board     [][]string
-	is_x_turn bool
+	board   [][]string
+	isXTurn bool
 }
 
 func InitTicTacToe() *TicTacToe {
@@ -18,7 +19,7 @@ func InitTicTacToe() *TicTacToe {
 }
 
 func (t *TicTacToe) GetPlayerTurn() string {
-	if t.is_x_turn {
+	if t.isXTurn {
 		return "X"
 	} else {
 		return "O"
@@ -30,18 +31,18 @@ func (t *TicTacToe) Move(row int, col int) (string, error) {
 		return "", errors.New("bad value")
 	}
 
-	if t.is_x_turn {
+	if t.isXTurn {
 		t.board[row][col] = "X"
 	} else {
 		t.board[row][col] = "O"
 	}
-	// TODO: I should put the helper in a separate package
-	win := ai.CheckWinHelper(t.board)
+
+	win := utils.CheckWinHelper(t.board)
 	if win != "" {
 		return win, nil
 	}
 
-	t.is_x_turn = !t.is_x_turn
+	t.isXTurn = !t.isXTurn
 	return "", nil
 }
 
@@ -50,12 +51,12 @@ func (t *TicTacToe) AiMove() string {
 	result := ai.Minimax(t.board)
 	t.board[result.Row][result.Col] = "O"
 
-	win := ai.CheckWinHelper(t.board)
+	win := utils.CheckWinHelper(t.board)
 	if win != "" {
 		return win
 	}
 
-	t.is_x_turn = !t.is_x_turn
+	t.isXTurn = !t.isXTurn
 	return ""
 }
 
