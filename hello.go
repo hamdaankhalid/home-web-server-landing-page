@@ -28,6 +28,13 @@ func (s *ServerState) move(row int, col int) string {
 		return ""
 	}
 
+	if win == "" && s.Game.GetPlayerTurn() == "X" {
+		win, err = s.Game.AiMove()
+	}
+	if err != nil {
+		return ""
+	}
+
 	if win != "" {
 		s.Game = game.InitTicTacToe()
 		s.ScoreTable[win] += 1
@@ -48,7 +55,6 @@ func actions(route string, state *ServerState) func(w http.ResponseWriter, r *ht
 	case "move":
 		return func(w http.ResponseWriter, r *http.Request) {
 			err := r.ParseForm()
-
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -63,7 +69,6 @@ func actions(route string, state *ServerState) func(w http.ResponseWriter, r *ht
 				http.Redirect(w, r, "/", http.StatusBadRequest)
 				return
 			}
-
 			state.move(rval, cval)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
