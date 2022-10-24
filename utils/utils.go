@@ -3,23 +3,15 @@ package utils
 func CheckWinHelper(board [][]string) string {
 	players := []string{"X", "O"}
 	for _, player := range players {
-		for i := 0; i < len(board); i++ {
-			if check_horizontal_row(i, player, board) {
+		for i := 0; i < 3; i++ {
+			if checkHorizontal(i, player, board) || checkVertical(i, player, board) {
 				return player
 			}
 		}
-
-		for i := 0; i < len(board[0]); i++ {
-			if check_vertical_col(i, player, board) {
-				return player
-			}
-		}
-
-		if check_top_l_r_diag(player, board) {
+		if checkTopLRDiag(player, board) {
 			return player
 		}
-
-		if check_top_r_l_diag(player, board) {
+		if checkTopRLDiag(player, board) {
 			return player
 		}
 	}
@@ -35,8 +27,8 @@ func CheckWinHelper(board [][]string) string {
 	return "D"
 }
 
-func check_horizontal_row(row int, candidate string, board [][]string) bool {
-	for i := 0; i < len(board[0]); i++ {
+func checkHorizontal(row int, candidate string, board [][]string) bool {
+	for i := 0; i < 3; i++ {
 		if board[row][i] != candidate {
 			return false
 		}
@@ -44,8 +36,8 @@ func check_horizontal_row(row int, candidate string, board [][]string) bool {
 	return true
 }
 
-func check_vertical_col(col int, candidate string, board [][]string) bool {
-	for i := 0; i < len(board); i++ {
+func checkVertical(col int, candidate string, board [][]string) bool {
+	for i := 0; i < 3; i++ {
 		if board[i][col] != candidate {
 			return false
 		}
@@ -53,10 +45,10 @@ func check_vertical_col(col int, candidate string, board [][]string) bool {
 	return true
 }
 
-func check_top_l_r_diag(candidate string, board [][]string) bool {
+func checkTopLRDiag(candidate string, board [][]string) bool {
 	return board[0][0] == candidate && board[1][1] == candidate && board[2][2] == candidate
 }
 
-func check_top_r_l_diag(candidate string, board [][]string) bool {
+func checkTopRLDiag(candidate string, board [][]string) bool {
 	return board[0][2] == candidate && board[1][1] == candidate && board[2][0] == candidate
 }

@@ -38,7 +38,6 @@ func Minimax(board [][]string) BestMove {
 		board[move[0]][move[1]] = "O"
 		score := minimaxHelper(board, false)
 		board[move[0]][move[1]] = "-"
-
 		if best_move.score < score {
 			best_move = BestMove{move[0], move[1], score}
 		}
