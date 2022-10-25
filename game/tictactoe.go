@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/hamdaankhalid/home-web-server-landing-page/ai"
 	"github.com/hamdaankhalid/home-web-server-landing-page/utils"
@@ -10,11 +11,13 @@ import (
 type TicTacToe struct {
 	board   [][]string
 	isXTurn bool
+	History []string
 }
 
 func InitTicTacToe() *TicTacToe {
 	init_board := [][]string{{"-", "-", "-"}, {"-", "-", "-"}, {"-", "-", "-"}}
-	t := TicTacToe{init_board, true}
+	history := []string{}
+	t := TicTacToe{init_board, true, history}
 	return &t
 }
 
@@ -31,11 +34,9 @@ func (t *TicTacToe) Move(row int, col int) (string, error) {
 		return "", errors.New("bad value")
 	}
 
-	if t.isXTurn {
-		t.board[row][col] = "X"
-	} else {
-		t.board[row][col] = "O"
-	}
+	t.board[row][col] = "X"
+
+	t.History = append(t.History, "Human placed X at "+strconv.Itoa(row)+", "+strconv.Itoa(col))
 
 	win := utils.CheckWinHelper(t.board)
 	if win != "" {
@@ -50,6 +51,8 @@ func (t *TicTacToe) AiMove() string {
 	// use minimax algorithm to make a move and return check_win
 	result := ai.Minimax(t.board)
 	t.board[result.Row][result.Col] = "O"
+
+	t.History = append(t.History, "AI placed O at "+strconv.Itoa(result.Row)+", "+strconv.Itoa(result.Col))
 
 	win := utils.CheckWinHelper(t.board)
 	if win != "" {

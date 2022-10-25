@@ -30,6 +30,14 @@
           {{ end }}
         </div>
       {{ end }}
+
+      <h5>On Going game move history</h5>
+
+      {{ range .History }}
+      <div>
+        {{.}}
+      </div>
+      {{ end }}
     </div>
     
     <div>

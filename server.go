@@ -49,6 +49,7 @@ type LandingPageData struct {
 	Board                     [][]string
 	Xscore, Oscore, Drawscore int
 	PlayerTurn                string
+	History                   []string
 }
 
 func actions(route string, state *serverState) func(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +83,7 @@ func actions(route string, state *serverState) func(w http.ResponseWriter, r *ht
 			tmpl := template.Must(template.ParseFS(static.Assets, "landing-page.tmpl"))
 			curr_board := state.game.GetBoard()
 			curr_player := state.game.GetPlayerTurn()
-			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.scoreTable["X"], Oscore: state.scoreTable["O"], Drawscore: state.scoreTable["D"], PlayerTurn: curr_player}
+			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.scoreTable["X"], Oscore: state.scoreTable["O"], Drawscore: state.scoreTable["D"], PlayerTurn: curr_player, History: state.game.History}
 			tmpl.Execute(w, tmpl_args)
 		}
 	}
