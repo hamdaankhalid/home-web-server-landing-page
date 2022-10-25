@@ -1,6 +1,8 @@
 package ai
 
-import "github.com/hamdaankhalid/home-web-server-landing-page/utils"
+import (
+	"github.com/hamdaankhalid/home-web-server-landing-page/utils"
+)
 
 /**
 I'm going to code out minimax here without using any help from any website and with the rough understanding of
@@ -25,6 +27,11 @@ and use the last returned choice as our row and col to fill with the "O".
 type BestMove struct {
 	Row, Col int
 	score    int
+	depth    int
+}
+
+type minimaxRes struct {
+	score, depth int
 }
 
 // pseudo-const
@@ -33,23 +40,29 @@ var valueFuncMapper = map[string]int{"O": 1, "D": 0, "X": -1}
 // AI / Player O is maximizer
 func Minimax(board [][]string) BestMove {
 	allPossibleMoves := getAllPossibleMoves(board)
-	best_move := BestMove{-1, -1, -100}
+	best_move := BestMove{-1, -1, -100, -100}
+
 	for _, move := range allPossibleMoves {
 		board[move[0]][move[1]] = "O"
-		score := minimaxHelper(board, false)
+		score := minimaxHelper(board, false, 1)
 		board[move[0]][move[1]] = "-"
-		if best_move.score < score {
-			best_move = BestMove{move[0], move[1], score}
+
+		if score.score == best_move.score && score.depth < best_move.depth {
+			best_move = BestMove{Row: move[0], Col: move[1], score: score.score, depth: score.depth}
+		}
+		if score.score > best_move.score {
+			best_move = BestMove{Row: move[0], Col: move[1], score: score.score, depth: score.depth}
 		}
 	}
+
 	return best_move
 }
 
-func minimaxHelper(board [][]string, isMaximizer bool) int {
+func minimaxHelper(board [][]string, isMaximizer bool, depth int) minimaxRes {
 	// base case is evaluated by our value func
 	win := utils.CheckWinHelper(board)
 	if win != "" {
-		return valueFuncMapper[win]
+		return minimaxRes{valueFuncMapper[win], depth}
 	}
 
 	var candidate string
@@ -61,31 +74,40 @@ func minimaxHelper(board [][]string, isMaximizer bool) int {
 		candidate = "X"
 	}
 	possible_moves := getAllPossibleMoves(board)
-	scores := make([]int, len(possible_moves))
+	scores := make([]minimaxRes, len(possible_moves))
 
 	for i, move := range possible_moves {
 		board[move[0]][move[1]] = candidate
-		scores[i] = minimaxHelper(board, !isMaximizer)
+		scores[i] = minimaxHelper(board, !isMaximizer, depth+1)
 		board[move[0]][move[1]] = "-"
 	}
 
-	const MaxUint = ^uint(0)
 	if isMaximizer {
-		max_e := -int(MaxUint >> 1)
+		bestOne := minimaxRes{-100, 1000}
+
 		for _, e := range scores {
-			if e > max_e {
-				max_e = e
+			if e.score >= bestOne.score {
+				if e.score == bestOne.score && e.depth < bestOne.depth {
+					bestOne = e
+				} else if e.score > bestOne.score {
+					bestOne = e
+				}
 			}
 		}
-		return max_e
+		return bestOne
 	} else {
-		min_e := int(MaxUint >> 1)
+		bestOne := minimaxRes{100, 1000}
+
 		for _, e := range scores {
-			if e < min_e {
-				min_e = e
+			if e.score <= bestOne.score {
+				if e.score == bestOne.score && e.depth < bestOne.depth {
+					bestOne = e
+				} else if e.score < bestOne.score {
+					bestOne = e
+				}
 			}
 		}
-		return min_e
+		return bestOne
 	}
 }
 
