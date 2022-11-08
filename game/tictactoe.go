@@ -15,9 +15,9 @@ type TicTacToe struct {
 }
 
 func InitTicTacToe() *TicTacToe {
-	init_board := [][]string{{"-", "-", "-"}, {"-", "-", "-"}, {"-", "-", "-"}}
-	history := []string{}
-	t := TicTacToe{init_board, true, history}
+	initBoard := [][]string{{"-", "-", "-"}, {"-", "-", "-"}, {"-", "-", "-"}}
+	var history []string
+	t := TicTacToe{initBoard, true, history}
 	return &t
 }
 

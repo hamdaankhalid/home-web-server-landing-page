@@ -21,8 +21,8 @@ type serverState struct {
 }
 
 func initServer() *serverState {
-	init_map := map[string]int{"X": 0, "O": 0, "D": 0}
-	return &serverState{game: game.InitTicTacToe(), scoreTable: init_map}
+	initMap := map[string]int{"X": 0, "O": 0, "D": 0}
+	return &serverState{game: game.InitTicTacToe(), scoreTable: initMap}
 }
 
 func (s *serverState) move(row int, col int) string {
@@ -43,7 +43,7 @@ func (s *serverState) move(row int, col int) string {
 	return ""
 }
 
-// all members are public since this is used in a different package
+// LandingPageData all members are public since this is used in a different package
 type LandingPageData struct {
 	TimeNow                   string
 	Board                     [][]string
@@ -81,10 +81,10 @@ func actions(route string, state *serverState) func(w http.ResponseWriter, r *ht
 			state.mu.Lock()
 			defer state.mu.Unlock()
 			tmpl := template.Must(template.ParseFS(static.Assets, "landing-page.tmpl"))
-			curr_board := state.game.GetBoard()
-			curr_player := state.game.GetPlayerTurn()
-			tmpl_args := LandingPageData{TimeNow: time.Now().String(), Board: curr_board, Xscore: state.scoreTable["X"], Oscore: state.scoreTable["O"], Drawscore: state.scoreTable["D"], PlayerTurn: curr_player, History: state.game.History}
-			tmpl.Execute(w, tmpl_args)
+			currBoard := state.game.GetBoard()
+			currPlayer := state.game.GetPlayerTurn()
+			tmplArgs := LandingPageData{TimeNow: time.Now().String(), Board: currBoard, Xscore: state.scoreTable["X"], Oscore: state.scoreTable["O"], Drawscore: state.scoreTable["D"], PlayerTurn: currPlayer, History: state.game.History}
+			tmpl.Execute(w, tmplArgs)
 		}
 	}
 }
