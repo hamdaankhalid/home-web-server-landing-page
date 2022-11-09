@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/hamdaankhalid/home-web-server-landing-page/dbclient"
 	"html/template"
 	"log"
 	"net/http"
@@ -18,11 +19,27 @@ type serverState struct {
 	game       *game.TicTacToe
 	scoreTable map[string]int
 	mu         sync.Mutex
+	dbClient   *dbclient.Db
 }
 
 func initServer() *serverState {
-	initMap := map[string]int{"X": 0, "O": 0, "D": 0}
-	return &serverState{game: game.InitTicTacToe(), scoreTable: initMap}
+	dbClient := dbclient.Db{DbHost: "localhost", Port: "8000"}
+
+	xScore, err := dbClient.GetInt("X")
+	if err != nil {
+		xScore = 0
+	}
+	oScore, err := dbClient.GetInt("O")
+	if err != nil {
+		oScore = 0
+	}
+	dScore, err := dbClient.GetInt("D")
+	if err != nil {
+		dScore = 0
+	}
+	initMap := map[string]int{"X": xScore, "O": oScore, "D": dScore}
+
+	return &serverState{game: game.InitTicTacToe(), scoreTable: initMap, dbClient: &dbClient}
 }
 
 func (s *serverState) move(row int, col int) string {
@@ -37,6 +54,7 @@ func (s *serverState) move(row int, col int) string {
 
 	if win != "" {
 		s.game = game.InitTicTacToe()
+		s.dbClient.SetInt(win, s.scoreTable[win]+1)
 		s.scoreTable[win] += 1
 		return win
 	}

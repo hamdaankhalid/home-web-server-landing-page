@@ -13,8 +13,8 @@
 
     <a href="https://hamdaan-rails-personal.herokuapp.com/">Visit Me Here Guys!</a>
 
-    <div>
     <h3> Play against Minimax based Ai-Agent (Player O) </h3>
+
       <div>
         <h3> Tic-Tac-Toe Score Board</h3>
           <li>Total Games Won By X (HUMAN): {{.Xscore}}</li>
@@ -22,43 +22,48 @@
           <li>Total Games Drawn: {{.Drawscore}}</li>
       </div>
 
-      <h3> On-going Game</h3>
-      {{ range $rowId, $RowVal := .Board }}
+    <div style="display: inline; padding-left: 10%;">
+      <div style="display: inline-block;">
+        <h3> On-going Game</h3>
+        {{ range $rowId, $RowVal := .Board }}
         <div>
           {{range $colId, $cellVal := $RowVal}}
             {{ $cellVal }}  ({{ $rowId }}, {{ $colId }})
           {{ end }}
         </div>
-      {{ end }}
+        {{ end }}
 
-      <h5>On Going game move history</h5>
+        <div>
+              <h4>Enter Next Move For Player: {{.PlayerTurn}}</h4>
+            </div>
 
-      {{ range .History }}
-      <div>
-        {{.}}
+
+            <form action="/tic-tac-toe-move">
+              <div>
+                <label for="row">Row </label>
+                <input type="number" name="row" id="row" required>
+              </div>
+              <div>
+                <label for="col">Col </label>
+                <input type="number" name="col" id="col" required>
+              </div>
+              <div>
+                <button type="submit" class="btn btn-primary">Make Move</button>
+              </div>
+            </form>
       </div>
-      {{ end }}
+
+
+      <div style="display: inline-block; float: middle;">
+          <h5>On Going game move history will appear here till somebody wins</h5>
+
+          {{ range .History }}
+          <div>
+            {{.}}
+          </div>
+          {{ end }}
+      </div>
     </div>
-    
-    <div>
-      <h4>Enter Next Move For Player: {{.PlayerTurn}}</h4>
-    </div>
-
-
-    <form action="/tic-tac-toe-move">
-      <div>
-        <label for="row">Row </label>
-        <input type="number" name="row" id="row" required>
-      </div>
-      <div>
-        <label for="col">Col </label>
-        <input type="number" name="col" id="col" required>
-      </div>
-      <div>
-        <button type="submit" class="btn btn-primary">Make Move</button>
-      </div>
-    </form>
-    
 
   </body>
 </html>
